@@ -1,0 +1,63 @@
+Hi Mark,
+
+ 
+
+As discussed, Thank you again for your time and interest in the opportunity. 
+As the next step in our process, we would like you to complete a take-home assessment 
+to better understand your approach to data engineering, pipeline design, and analysis.
+
+ 
+
+Project: Weather Data Analysis (Downtown LA)
+
+Your goal is to help stakeholders understand past weather patterns in Downtown Los Angeles 
+using the provided datasets.
+
+ 
+
+Dataset Overview
+
+    The weather-pdfs folder contains 10 PDFs (one per day), with varying formats and 
+    potential inconsistencies.
+    The 3month_weather.csv contains 3 months of historical data, though it is poorly 
+    formatted.
+
+You may choose to use one or both datasets. Note that the data between them may not 
+fully align.
+
+ 
+
+Phase 1 — Data Ingestion & Storage
+
+    Parse all 10 PDFs programmatically (no manual extraction)
+    Load the data into a structured database of your choice
+    Design a scalable schema for future data ingestion
+    Build a repeatable ingestion pipeline/script
+    Handle missing or inconsistent data gracefully
+    Clearly document your schema design, assumptions, and approach
+
+(Optional) You may include a Jupyter Notebook showcasing alternative approaches 
+you explored.
+
+ 
+
+Phase 2 — Data Analysis
+
+    Perform analysis using Jupyter Notebook (pandas, matplotlib, seaborn, etc.) 
+    or Tableau
+    Present insights as a clear data story (not just charts)
+    Include at least 3 meaningful analyses or visualizations
+    Ensure data is sourced dynamically from your database (no hardcoding)
+    Clearly label axes, units, and data sources
+    Provide brief explanations for each analysis
+
+ 
+
+Deliverables
+
+Please submit the following:
+
+    Code repository containing your data ingestion pipeline
+    Database schema overview
+    Jupyter Notebook or Tableau workbook with your analysis
+    A short recording/demo walking through your solution
