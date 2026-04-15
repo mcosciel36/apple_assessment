@@ -82,15 +82,8 @@ asdf install
    `weather_project/data/weather.db` (where ingest writes). If a cell fails to find
    the DB, run the notebook with cwd `notebooks/` or adjust the path in the first cell.
 
-   **Which notebook to use**
-   - **`weather_analysis_full_columns.ipynb` (recommended)** — PDF-focused `daily_*` columns,
-     CSV vs PDF deltas on legacy fields, optional “image truth” reconciliation for March PDFs,
-     and charts (temps vs normal/record, HDD/CDD, precip). Use this for the take-home deep dive.
-   - **`weather_analysis.ipynb`** — shorter notebook: **all** `daily_weather` rows joined to
-     `sources`, monthly temperature trend, wet-day precip distribution, and quality/source
-     summaries. It does **not** use expanded `daily_*` / `mtd_*` / `ytd_*` columns; it is a
-     broader, lighter-weight EDA over the same database.
-   - **`weather_analysisV1_origObsOnly.ipynb`** — older observed-only snapshot.
+   **Optional notebooks**
+   - **`weather_analysisV1_origObsOnly.ipynb`** — older observed-only snapshot (if present locally).
 
 ## Screenshot vs database checks (LLM-friendly)
 
@@ -129,7 +122,6 @@ CSV export.
 - `src/weather_project/parsers/csv_parser.py`: section-aware CSV parser
 - `src/weather_project/parsers/pdf_parser.py`: PDF text parser (observed + `daily_*` / `mtd_*` / `ytd_*` where applicable)
 - `notebooks/weather_analysis_full_columns.ipynb`: **primary** analysis (CSV vs PDF, normals, records)
-- `notebooks/weather_analysis.ipynb`: earlier notebook (core metrics)
 - `docs/schema.md`: schema and assumptions (`ingestion_type`, additive columns)
 - `docs/llm_image_db_validation.md`: how to compare screenshots to SQLite + LLM prompt template
 - `docs/PDF_PARSER_NOTES.md`: parser layout notes and edge cases

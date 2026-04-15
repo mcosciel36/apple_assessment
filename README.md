@@ -5,7 +5,7 @@ Materials and code for the Downtown LA weather assessment.
 | Path | Contents |
 |------|----------|
 | [`archive/`](archive/) | Problem statement, instructions, `3month_weather.csv`, `weather-pdfs.zip` |
-| [`weather_project/`](weather_project/) | Poetry app: ingestion pipeline, SQLite DB, Jupyter notebook, schema doc |
+| [`weather_project/`](weather_project/) | Poetry app: ingestion pipeline, SQLite DB, Jupyter notebooks, schema doc |
 
 Run the project from [`weather_project/README.md`](weather_project/README.md).
 
