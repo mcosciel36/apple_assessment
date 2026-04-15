@@ -11,7 +11,9 @@ class Settings:
     pdf_zip_path: Path
     csv_path: Path
     raw_pdf_dir: Path
+    raw_pdf_image_dir: Path
     sqlite_path: Path
+    ocr_render_dpi: int
 
 
 def get_settings() -> Settings:
@@ -23,5 +25,7 @@ def get_settings() -> Settings:
         pdf_zip_path=archive_dir / "weather-pdfs.zip",
         csv_path=archive_dir / "3month_weather.csv",
         raw_pdf_dir=project_root / "data" / "raw" / "weather-pdfs",
+        raw_pdf_image_dir=project_root / "data" / "raw" / "weather-pdfs-images",
         sqlite_path=project_root / "data" / "weather.db",
+        ocr_render_dpi=200,
     )

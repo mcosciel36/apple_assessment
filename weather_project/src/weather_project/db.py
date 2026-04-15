@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 
-from sqlalchemy import create_engine, delete, select
+from sqlalchemy import create_engine, delete, inspect, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from weather_project.models import Base, DailyWeather, Source
+from weather_project.models import Base, DailyWeather, DailyWeatherImageRecognition, Source
 
 
 def get_engine(sqlite_path: Path):
@@ -24,8 +24,17 @@ def create_schema(sqlite_path: Path) -> None:
 def reset_tables(sqlite_path: Path) -> None:
     engine = get_engine(sqlite_path)
     with Session(engine) as session:
+        session.execute(delete(DailyWeatherImageRecognition))
         session.execute(delete(DailyWeather))
         session.execute(delete(Source))
+        session.commit()
+
+
+def reset_image_recognition_table(sqlite_path: Path) -> None:
+    """Clear only image-recognition rows, keeping existing ingest outputs intact."""
+    engine = get_engine(sqlite_path)
+    with Session(engine) as session:
+        session.execute(delete(DailyWeatherImageRecognition))
         session.commit()
 
 
@@ -63,3 +72,33 @@ def get_or_create_source(
     session.add(source)
     session.flush()
     return source
+
+
+def ensure_image_recognition_columns(sqlite_path: Path, columns: dict[str, str]) -> None:
+    """
+    Add missing columns to daily_weather_image_recognition additively.
+
+    Parameters
+    ----------
+    sqlite_path:
+        SQLite database path.
+    columns:
+        Mapping of column_name -> SQLite type (e.g. REAL, TEXT).
+    """
+    if not columns:
+        return
+    engine = get_engine(sqlite_path)
+    inspector = inspect(engine)
+    existing_cols = {c["name"] for c in inspector.get_columns("daily_weather_image_recognition")}
+    safe_type_map = {"REAL", "TEXT", "INTEGER"}
+
+    with engine.begin() as conn:
+        for col, col_type in columns.items():
+            if col in existing_cols:
+                continue
+            normalized_type = col_type.upper().strip()
+            if normalized_type not in safe_type_map:
+                raise ValueError(f"Unsupported SQLite type for dynamic column {col}: {col_type}")
+            conn.execute(
+                text(f"ALTER TABLE daily_weather_image_recognition ADD COLUMN {col} {normalized_type}")
+            )

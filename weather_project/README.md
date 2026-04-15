@@ -9,9 +9,21 @@ analysis for Downtown LA weather.
 - [Poetry](https://python-poetry.org/) (install globally or via asdf)
 - `sqlite3` on your `PATH` for the optional smoke script (included on macOS;
   on Linux install your distro’s `sqlite` / `sqlite3` package if needed)
+- `tesseract` on your `PATH` for OCR-based image-recognition ingest
+  (`ingest-weather-image-recognition`)
 
 Python is pinned in [`.tool-versions`](.tool-versions) to match `pyproject.toml`
 (`>=3.10,<3.13`). Use asdf so the correct interpreter is active in this directory.
+
+Install Tesseract (system dependency, not a Poetry package):
+
+```bash
+brew install tesseract
+tesseract --version
+```
+
+`tesseract` cannot be added as a Python dependency in `pyproject.toml`; it is
+a native OCR binary installed at the OS level.
 
 ## Quick start
 
@@ -36,6 +48,12 @@ asdf install
 2. Build and load the database:
    - `poetry run ingest-weather`  
      This writes `data/weather.db` (and refreshes extracted PDFs under `data/raw/`).
+   - Optional image-recognition ingest:
+     - `poetry run ingest-weather-image-recognition`
+     - This writes to `daily_weather_image_recognition` and does **not** change
+       `daily_weather` rows produced by `ingest-weather`.
+   - Compare parser vs image-recognition rows:
+     - `./scripts/compare_parser_vs_image_rec.sh`
 3. **Smoke test / data-quality check (after ingest):**  
    Run this **after** step 2 so `data/weather.db` exists. It uses the system
    `sqlite3` CLI (no Poetry) to print row counts, source breakdown, date range,
@@ -64,9 +82,12 @@ if you want a fresh CLI sanity check.
 
 - `scripts/inspect_db.sh`: SQLite CLI smoke test (row counts, quality flags, overlaps)
 - `tests/test_pdf_parser_snippets.py`: PDF parser regression (Mar 13–17 layout cases)
+- `tests/test_image_recognition_ingest.py`: image-recognition ingest/regression tests
 - `src/weather_project/ingest.py`: end-to-end ingestion entrypoint
+- `src/weather_project/ingest_image_recognition.py`: separate OCR ingest from rendered PDF pages
 - `src/weather_project/parsers/csv_parser.py`: section-aware CSV parser
 - `src/weather_project/parsers/pdf_parser.py`: resilient PDF parser
+- `src/weather_project/parsers/pdf_image_recognition_parser.py`: OCR full-field parser over rendered PDF pages
 - `notebooks/weather_analysis.ipynb`: analysis with at least three charts
 - `docs/schema.md`: schema and assumption overview
 
@@ -76,3 +97,7 @@ if you want a fresh CLI sanity check.
 - The parser stores these as null numeric values and sets `quality_flag`.
 - PDF layouts vary by day; the parser uses flexible text matching and date
   pattern fallbacks to keep ingestion robust.
+- The image-recognition ingest writes OCR-derived values to
+  `daily_weather_image_recognition` and keeps parser output in `daily_weather`.
+- Image-recognition rows include confidence/trace metadata
+  (`confidence_overall`, `extraction_trace_json`, `ocr_raw_excerpt`) for audit.
