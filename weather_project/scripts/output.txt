@@ -1,0 +1,104 @@
+(hacker-rank-py3.10) markcosciello@marks-MBP weather_project % ./scripts/inspect_db.sh
+Database: /Users/markcosciello/git/apple_assessment/weather_project/data/weather.db
+
+=== SQLite version ===
+sqlite_version
+--------------
+3.37.0        
+
+=== Row counts ===
+tbl            n 
+-------------  --
+sources        11
+daily_weather  93
+
+=== Sources (kind, file, ingested) ===
+id  kind  filename            checksum_prefix  ingested_at               
+--  ----  ------------------  ---------------  --------------------------
+1   csv   3month_weather.csv  677a380e1e43…    2026-04-14 22:29:13.833118
+2   pdf   weather_mar09.pdf   b65e18ca1892…    2026-04-14 22:29:13.927478
+3   pdf   weather_mar10.pdf   ab27dc1b1dbb…    2026-04-14 22:29:13.996073
+4   pdf   weather_mar11.pdf   46bcf4bd9e22…    2026-04-14 22:29:14.078146
+5   pdf   weather_mar12.pdf   afd1cf42184d…    2026-04-14 22:29:14.226517
+6   pdf   weather_mar13.pdf   abd121c080bb…    2026-04-14 22:29:14.348935
+7   pdf   weather_mar14.pdf   91db4195eb5b…    2026-04-14 22:29:14.431285
+8   pdf   weather_mar15.pdf   cf799f82f7d9…    2026-04-14 22:29:14.519863
+9   pdf   weather_mar16.pdf   1ffccc524ed4…    2026-04-14 22:29:14.590421
+10  pdf   weather_mar17.pdf   45c6e1c2f6b6…    2026-04-14 22:29:14.723823
+11  pdf   weather_mar18.pdf   c279a805fc41…    2026-04-14 22:29:14.823524
+
+=== Observations by source kind ===
+kind  observation_rows
+----  ----------------
+csv   83              
+pdf   10              
+
+=== Observation date range ===
+min_date    max_date  
+----------  ----------
+2026-01-01  2026-03-31
+
+=== Quality flags (non-null) ===
+quality_flag        n 
+------------------  --
+(null)              74
+missing_marked      14
+qc_0                3 
+parse_error_token   1 
+missing_no_weather  1 
+
+=== Missing key metrics (nulls) ===
+null_temp_max  null_temp_min  null_temp_avg  null_precip
+-------------  -------------  -------------  -----------
+15             15             15             23         
+
+=== Duplicate (date, source) rows (expect 0) ===
+
+=== Same calendar date from CSV and PDF (overlap days) ===
+observation_date  source_kinds
+----------------  ------------
+2026-03-09        2           
+2026-03-10        2           
+2026-03-11        2           
+2026-03-12        2           
+2026-03-13        2           
+2026-03-14        2           
+2026-03-15        2           
+2026-03-16        2           
+2026-03-17        2           
+2026-03-18        2           
+
+=== DQ: suspicious daily precipitation (heuristic > 3 in) ===
+observation_date  kind  filename            precip_inches  temp_max_f  temp_avg_f  quality_flag
+----------------  ----  ------------------  -------------  ----------  ----------  ------------
+2026-03-14        pdf   weather_mar14.pdf   93.0           83.0        69.5                    
+2026-02-27        csv   3month_weather.csv  6.0            87.0        70.5                    
+
+=== DQ: min temp greater than max temp (expect empty) ===
+
+=== DQ: CSV vs PDF field deltas on same calendar date ===
+observation_date  csv_precip  pdf_precip  precip_abs_delta  csv_tmax  pdf_tmax  tmax_abs_delta  csv_tmin  pdf_tmin  tmin_abs_delta  csv_tavg  pdf_tavg  tavg_abs_delta
+----------------  ----------  ----------  ----------------  --------  --------  --------------  --------  --------  --------------  --------  --------  --------------
+2026-03-14        0.0         93.0        93.0              83.0      83.0      0.0             56.0      56.0      0.0             69.5      69.5      0.0           
+2026-03-18                    0.06        0.06                        70.0      70.0                      53.0      53.0                      61.3      61.3          
+2026-03-16        0.0         0.0         0.0               90.0      90.0      0.0             56.0      56.0      0.0             73.0      79.7      6.7           
+2026-03-17        0.0                     0.0               98.0      80.8      17.2            64.0      55.0      9.0             81.0      81.0      0.0           
+
+=== DQ: PDF rows only — precip vs nearby temps (possible label bleed) ===
+
+=== Sample joined rows (5) ===
+observation_date  kind  filename            temp_max_f  temp_min_f  precip_inches  quality_flag
+----------------  ----  ------------------  ----------  ----------  -------------  ------------
+2026-01-01        csv   3month_weather.csv  68.0        53.0        1.31                       
+2026-01-02        csv   3month_weather.csv  66.0        53.0        0.3                        
+2026-01-03        csv   3month_weather.csv  63.0        55.0        0.54                       
+2026-01-04        csv   3month_weather.csv  60.0        54.0        0.32                       
+2026-01-05        csv   3month_weather.csv  65.0        50.0                                   
+
+=== Done ===
+Duplicate (date, source): should be empty (unique index on daily_weather).
+Overlap days: dates where both csv and pdf contributed a row (expected for March PDF window).
+DQ precip > 3 in: rare for LA; large values often indicate PDF field bleed (fixed in parser).
+DQ CSV vs PDF deltas: on overlap days, material mismatches may indicate parsing or source drift.
+DQ precip ~= avg_temp: heuristic for mistaken token bind (same numeric field on one PDF line).
+(hacker-rank-py3.10) markcosciello@marks-MBP weather_project % 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Any
 
 
 DATE_PAT = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{2,4})\b")
@@ -22,6 +23,7 @@ class ParsedObservation:
     quality_flag: str | None = None
     parse_notes: str | None = None
     raw_excerpt: str | None = None
+    full_values: dict[str, Any] | None = None
 
 
 def parse_mmddyy(value: str) -> date | None:
