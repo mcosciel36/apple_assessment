@@ -5,8 +5,16 @@ import logging
 import zipfile
 from pathlib import Path
 
+from sqlalchemy import Integer, String, Text
+
 from weather_project.config import get_settings
-from weather_project.db import create_schema, get_or_create_source, reset_tables, session_scope
+from weather_project.db import (
+    create_schema,
+    ensure_daily_weather_columns,
+    get_or_create_source,
+    reset_tables,
+    session_scope,
+)
 from weather_project.models import DailyWeather
 from weather_project.parsers.csv_parser import parse_csv_observations
 from weather_project.parsers.pdf_parser import parse_pdf_observation
@@ -24,6 +32,7 @@ def main() -> None:
 
     _extract_pdfs(settings.pdf_zip_path, settings.raw_pdf_dir.parent)
     create_schema(settings.sqlite_path)
+    ensure_daily_weather_columns(settings.sqlite_path, _daily_weather_column_types())
     reset_tables(settings.sqlite_path)
 
     with session_scope(settings.sqlite_path) as session:
@@ -39,6 +48,7 @@ def main() -> None:
                 DailyWeather(
                     observation_date=row.observation_date,
                     source_id=csv_source.id,
+                    ingestion_type="csv",
                     temp_max_f=row.temp_max_f,
                     temp_min_f=row.temp_min_f,
                     temp_avg_f=row.temp_avg_f,
@@ -73,6 +83,7 @@ def main() -> None:
                 DailyWeather(
                     observation_date=parsed.observation_date,
                     source_id=source.id,
+                    ingestion_type="pdf",
                     temp_max_f=parsed.temp_max_f,
                     temp_min_f=parsed.temp_min_f,
                     temp_avg_f=parsed.temp_avg_f,
@@ -84,6 +95,7 @@ def main() -> None:
                     quality_flag=parsed.quality_flag,
                     parse_notes=parsed.parse_notes,
                     raw_excerpt=parsed.raw_excerpt,
+                    **_filter_daily_weather_kwargs(parsed.full_values or {}),
                 )
             )
             pdf_count += 1
@@ -102,6 +114,41 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(8192), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _filter_daily_weather_kwargs(values: dict[str, object]) -> dict[str, object]:
+    allowed = set(DailyWeather.__table__.columns.keys())
+    return {key: value for key, value in values.items() if key in allowed}
+
+
+def _daily_weather_column_types() -> dict[str, str]:
+    base = {
+        "id",
+        "observation_date",
+        "source_id",
+        "temp_max_f",
+        "temp_min_f",
+        "temp_avg_f",
+        "temp_departure",
+        "hdd",
+        "cdd",
+        "precip_inches",
+        "snow_depth",
+        "quality_flag",
+        "parse_notes",
+        "raw_excerpt",
+    }
+    out: dict[str, str] = {}
+    for column in DailyWeather.__table__.columns:
+        if column.name in base:
+            continue
+        if isinstance(column.type, Integer):
+            out[column.name] = "INTEGER"
+        elif isinstance(column.type, (String, Text)):
+            out[column.name] = "TEXT"
+        else:
+            out[column.name] = "REAL"
+    return out
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@
 - `id` (PK, integer)
 - `observation_date` (date)
 - `source_id` (FK to `sources.id`)
+- `ingestion_type` (`csv` or `pdf`; nullable for backward compatibility)
 - `temp_max_f`, `temp_min_f`, `temp_avg_f` (nullable float)
 - `temp_departure` (nullable float)
 - `hdd`, `cdd` (nullable float)
@@ -28,9 +29,25 @@
 - `quality_flag` (nullable string)
 - `parse_notes` (nullable text)
 - `raw_excerpt` (nullable text)
+- Additive parser-detail column families (all nullable):
+  - `daily_*`: full daily extraction fields like
+    `daily_temp_max_obs`, `daily_temp_max_norm`,
+    `daily_temp_max_record_high`, `daily_temp_max_record_high_year`,
+    `daily_temp_max_record_low`, `daily_temp_max_record_low_year`
+    (same pattern for min/avg/precip/hdd/cdd/snow_depth where present)
+  - `mtd_*`: month-to-date fields such as
+    `mtd_avg_max_f_obs`, `mtd_avg_max_f_norm`,
+    `mtd_avg_max_f_record_high`, `mtd_avg_max_f_record_high_year`,
+    `mtd_avg_max_f_record_low`, `mtd_avg_max_f_record_low_year`
+    (same pattern for avg_min/temp_avg/precip/hdd/cdd where present)
+  - `ytd_*`: year-to-date fields with the same obs/norm/record/year pattern
 
 Unique constraint:
 - `(observation_date, source_id)` to prevent duplicate rows per source/day.
+
+Schema evolution policy:
+- `daily_weather` uses additive schema evolution during ingest (`ALTER TABLE ADD COLUMN`),
+  so newly introduced parser fields can be added without dropping/replacing the table.
 
 ## Assumptions
 

@@ -174,6 +174,12 @@ order by d.observation_date, s.kind
 limit 5;
 "
 
+run_sql "Full daily_weather dump (all columns, all rows)" "
+select *
+from daily_weather
+order by observation_date, source_id;
+"
+
 echo ""
 echo "=== Done ==="
 echo "Duplicate (date, source): should be empty (unique index on daily_weather)."
