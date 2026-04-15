@@ -33,7 +33,14 @@ asdf install
 
 1. Install dependencies:
    - `poetry install`
-2. Build and load the database:
+2. **Run tests (optional but recommended):** from this directory,
+
+   ```bash
+   poetry run pytest
+   ```
+
+   Use `poetry run pytest -q` for less output. The suite lives in `tests/` (mainly `test_pdf_parser_snippets.py`); it does **not** require `ingest-weather` or `data/weather.db`—it uses inline PDF text fixtures and the checked-in sample PDFs under `data/raw/weather-pdfs/`.
+3. Build and load the database:
    - `poetry run ingest-weather` (same as `poetry run python -m weather_project.ingest`)  
      This writes `data/weather.db` (and refreshes extracted PDFs under `data/raw/`).
      Ingest sets `ingestion_type` on each row (`csv` or `pdf`) for easy filtering.
@@ -42,8 +49,8 @@ asdf install
      The PDF parser handles several layout variants (including prose normals on Mar 10,
      compact MTD/YTD tables with `°F` on Mar 16, split-line YTD HDD/CDD on Mar 18, and
      all-daily-`M` rows without mis-attributing YTD precip to daily obs).
-3. **Smoke test / data-quality check (after ingest):**  
-   Run this **after** step 2 so `data/weather.db` exists. It uses the system
+4. **Smoke test / data-quality check (after ingest):**  
+   Run this **after** step 3 so `data/weather.db` exists. It uses the system
    `sqlite3` CLI (no Poetry) to print row counts, source breakdown, date range,
    `quality_flag` distribution, null metrics, duplicate-key check, CSV vs
    PDF overlap, a full `daily_weather` dump, and more.
@@ -69,7 +76,7 @@ asdf install
    - `./scripts/report_pdf_ingest_vs_images.sh`
    - `IMAGE_DIR=/path/to/daily_images ./scripts/report_pdf_ingest_vs_images.sh`
 
-4. **Open the main analysis notebook** (observed vs normal vs records, CSV vs PDF):
+5. **Open the main analysis notebook** (observed vs normal vs records, CSV vs PDF):
 
    ```bash
    poetry run jupyter notebook notebooks/weather_analysis_full_columns.ipynb
@@ -107,8 +114,8 @@ Adjust the `@` path if your editor roots the workspace above `weather_project/`.
 - `../archive/weather-pdfs.zip`
 
 The pipeline unzips PDFs into `data/raw/weather-pdfs` and writes SQLite output
-to `data/weather.db` (local only; not committed—see `.gitignore`). Re-run step 2
-whenever inputs change; then re-run step 3 if you want a fresh CLI sanity check or
+to `data/weather.db` (local only; not committed—see `.gitignore`). Re-run step 3
+whenever inputs change; then re-run step 4 if you want a fresh CLI sanity check or
 CSV export.
 
 ## Project layout
