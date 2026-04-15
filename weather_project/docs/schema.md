@@ -41,3 +41,6 @@ Unique constraint:
   `parse_notes`, and `raw_excerpt`.
 - CSV and PDF rows are intentionally kept as separate observations via
   `source_id` so overlap can be analyzed.
+- The wide-month CSV can mis-align commas (e.g. some February rows with empty
+  CDD); `inspect_db.sh` may still flag rare values such as **2026-02-27** high
+  `precip_inches` from the CSV slice—treat as source ambiguity, not PDF layout.
