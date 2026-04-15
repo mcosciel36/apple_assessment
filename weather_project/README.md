@@ -69,6 +69,29 @@ asdf install
    - `./scripts/report_pdf_ingest_vs_images.sh`
    - `IMAGE_DIR=/path/to/daily_images ./scripts/report_pdf_ingest_vs_images.sh`
 
+4. **Open the main analysis notebook** (observed vs normal vs records, CSV vs PDF):
+
+   ```bash
+   poetry run jupyter notebook notebooks/weather_analysis_full_columns.ipynb
+   ```
+
+   Start Jupyter from the `weather_project/` directory (same place as `pyproject.toml`).
+   The notebooks open SQLite with `Path("../data/weather.db").resolve()`; that path
+   is relative to the **kernel’s current working directory**. With classic Jupyter,
+   cwd is usually the notebook’s folder (`notebooks/`), so `../data/weather.db` is
+   `weather_project/data/weather.db` (where ingest writes). If a cell fails to find
+   the DB, run the notebook with cwd `notebooks/` or adjust the path in the first cell.
+
+   **Which notebook to use**
+   - **`weather_analysis_full_columns.ipynb` (recommended)** — PDF-focused `daily_*` columns,
+     CSV vs PDF deltas on legacy fields, optional “image truth” reconciliation for March PDFs,
+     and charts (temps vs normal/record, HDD/CDD, precip). Use this for the take-home deep dive.
+   - **`weather_analysis.ipynb`** — shorter notebook: **all** `daily_weather` rows joined to
+     `sources`, monthly temperature trend, wet-day precip distribution, and quality/source
+     summaries. It does **not** use expanded `daily_*` / `mtd_*` / `ytd_*` columns; it is a
+     broader, lighter-weight EDA over the same database.
+   - **`weather_analysisV1_origObsOnly.ipynb`** — older observed-only snapshot.
+
 ## Screenshot vs database checks (LLM-friendly)
 
 Step-by-step instructions for comparing **`data/raw/daily_images/march_*.png`** to **`data/weather.db`** (no Tesseract), plus a **copy-paste prompt** for Cursor or other assistants, live in:
@@ -85,38 +108,22 @@ use the screenshots under data/raw/daily_images/ and the PDF rows in data/weathe
 
 Adjust the `@` path if your editor roots the workspace above `weather_project/`.
 
-4. **Open the main analysis notebook** (observed vs normal vs records, CSV vs PDF):
-
-   ```bash
-   poetry run jupyter notebook notebooks/weather_analysis_full_columns.ipynb
-   ```
-
-   Run Jupyter from the `weather_project/` directory so notebook paths like `../data/weather.db` resolve.
-
-   **Which notebook to use**
-   - **`weather_analysis_full_columns.ipynb` (recommended)** — PDF-focused `daily_*` columns,
-     CSV vs PDF deltas on legacy fields, optional “image truth” reconciliation for March PDFs,
-     and charts (temps vs normal/record, HDD/CDD, precip). Use this for the take-home deep dive.
-   - **`weather_analysis.ipynb`** — shorter notebook: **all** `daily_weather` rows joined to
-     `sources`, monthly temperature trend, wet-day precip distribution, and quality/source
-     summaries. It does **not** use expanded `daily_*` / `mtd_*` / `ytd_*` columns; it is a
-     broader, lighter-weight EDA over the same database.
-   - **`weather_analysisV1_origObsOnly.ipynb`** — older observed-only snapshot.
-
 ## Data inputs
 
 - `../archive/3month_weather.csv`
 - `../archive/weather-pdfs.zip`
 
 The pipeline unzips PDFs into `data/raw/weather-pdfs` and writes SQLite output
-to `data/weather.db`. Re-run step 2 whenever inputs change; then re-run step 3
-if you want a fresh CLI sanity check or CSV export.
+to `data/weather.db` (local only; not committed—see `.gitignore`). Re-run step 2
+whenever inputs change; then re-run step 3 if you want a fresh CLI sanity check or
+CSV export.
 
 ## Project layout
 
 - `scripts/inspect_db.sh`: SQLite CLI smoke test and full-table dump
 - `scripts/export_daily_weather_csv.sh`: export `select * from daily_weather` to CSV
 - `scripts/report_pdf_ingest_vs_images.sh`: PDF row report + image path hints
+- `scripts/sqlite3_commands.sh`: optional helper queries against `data/weather.db`
 - `tests/test_pdf_parser_snippets.py`: PDF parser regression (layout edge cases)
 - `src/weather_project/ingest.py`: end-to-end ingestion (`csv` + `pdf`)
 - `src/weather_project/parsers/csv_parser.py`: section-aware CSV parser
@@ -125,6 +132,7 @@ if you want a fresh CLI sanity check or CSV export.
 - `notebooks/weather_analysis.ipynb`: earlier notebook (core metrics)
 - `docs/schema.md`: schema and assumptions (`ingestion_type`, additive columns)
 - `docs/llm_image_db_validation.md`: how to compare screenshots to SQLite + LLM prompt template
+- `docs/PDF_PARSER_NOTES.md`: parser layout notes and edge cases
 
 ## Notes on data quality
 
