@@ -4,6 +4,7 @@ This project implements a repeatable weather ingestion pipeline and notebook
 analysis for Downtown LA weather (CSV + PDF sources).
 
 ## Prerequisites
+### Just ask your copilot LLM to help with the install of the following dependencies. 
 
 - [asdf](https://asdf-vm.com/) with the [Python plugin](https://github.com/asdf-community/asdf-python)
 - [Poetry](https://python-poetry.org/) (install globally or via asdf)
