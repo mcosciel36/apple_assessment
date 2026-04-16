@@ -45,7 +45,7 @@ asdf install
    - `poetry run ingest-weather` (same as `poetry run python -m weather_project.ingest`)  
      This writes `data/weather.db` (and refreshes extracted PDFs under `data/raw/`).
      Ingest sets `ingestion_type` on each row (`csv` or `pdf`) for easy filtering.
-     PDF ingestion fills legacy observed columns (`temp_max_f`, etc.) and additive
+     PDF ingestion fills observed columns (`temp_max_f`, etc.) and additive
      full-parser columns (`daily_*`, `mtd_*`, `ytd_*` obs/norm/record/year where parsed).
      The PDF parser handles several layout variants (including prose normals on Mar 10,
      compact MTD/YTD tables with `°F` on Mar 16, split-line YTD HDD/CDD on Mar 18, and
