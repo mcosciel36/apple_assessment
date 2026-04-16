@@ -57,11 +57,14 @@ asdf install
    PDF overlap, a full `daily_weather` dump, and more.
 
    ```bash
-   ./scripts/inspect_db.sh
+   ./scripts/inspect_db.sh > stdout.txt
+   cat stdout.txt
    ```
 
+   `sqlite3 -column` aligns for terminal width when stdout is a TTY, so piping straight to the console is often cramped. Redirecting to **`stdout.txt`** (then `cat`, `less`, or `vi`) matches a non-TTY run and usually looks much cleaner.
+
    Use a different DB file:  
-   `WEATHER_DB=/path/to/weather.db ./scripts/inspect_db.sh`
+   `WEATHER_DB=/path/to/weather.db ./scripts/inspect_db.sh > stdout.txt`
 
    **Export all `daily_weather` rows to CSV** (easier to open in Sheets than wide terminal output):
 
