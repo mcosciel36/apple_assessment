@@ -9,6 +9,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DB="${WEATHER_DB:-${PROJECT_ROOT}/data/weather.db}"
 
+# sqlite3 -column picks column widths from terminal width when stdout is a TTY;
+# writing to a temp file first matches "redirect script to a file" behavior so
+# tables are not squeezed into a narrow terminal.
+OUTFILE="$(mktemp -t inspect_db.XXXXXX)"
+trap 'rm -f "${OUTFILE}"' EXIT INT TERM
+
 if ! command -v sqlite3 >/dev/null 2>&1; then
   echo "error: sqlite3 not found on PATH" >&2
   exit 1
@@ -25,7 +31,8 @@ run_sql() {
   local sql="$2"
   echo ""
   echo "=== ${title} ==="
-  sqlite3 -header -column "${DB}" "${sql}"
+  sqlite3 -header -column "${DB}" "${sql}" >"${OUTFILE}"
+  cat "${OUTFILE}"
 }
 
 echo "Database: ${DB}"
