@@ -66,6 +66,18 @@ asdf install
    Use a different DB file:  
    `WEATHER_DB=/path/to/weather.db ./scripts/inspect_db.sh > stdout.txt`
 
+   **`daily_weather.quality_flag` (mapping)** — the script prints a **Quality flags** rollup; `(null)` means the column is SQL `NULL` (no flag set), not “no nulls in other columns.” `quality_flag` is separate from `ingestion_type` (`csv` vs `pdf`).
+
+   | `quality_flag` value | Source | When it is set |
+   |----------------------|--------|------------------|
+   | **SQL `NULL`** | CSV or PDF | No CSV placeholder token below matched, and no PDF rule below matched. Does **not** imply every numeric field is non-null. |
+   | **`missing_no_weather`** | CSV | The parsed field slice for that date contains the substring **`NO WEATHER`**. |
+   | **`missing_marked`** | CSV or PDF | **CSV:** any field token in the slice equals **`M`**. **PDF:** all daily observed values are missing in the PDF text (`_all_daily_observations_missing`; e.g. March 18 “all **M**”); core daily metrics are cleared for that row. |
+   | **`parse_error_token`** | CSV | Any field token in that slice equals **`ERROR`**. |
+   | **`qc_0`** | PDF | The PDF text contains **`QC FLAG: 0`**. If that string appears on a day that also triggers the PDF “all daily **M**” rule, **`qc_0` wins** (it is applied after that rule in code). |
+
+   CSV rules are evaluated in order; later matches can overwrite earlier ones for the same row (see `parsers/csv_parser.py`). PDF `qc_0` is applied after PDF `missing_marked` (see `parsers/pdf_parser.py`).
+
    **Export all `daily_weather` rows to CSV** (easier to open in Sheets than wide terminal output):
 
    ```bash
@@ -144,17 +156,4 @@ CSV export.
 - PDF layouts vary by day; the parser uses flexible text matching and date
   pattern fallbacks to keep ingestion robust. Expanded norm/record columns may be
   null when the source layout does not expose those fields in a parseable row.
-
-### `daily_weather.quality_flag` (mapping)
-
-`quality_flag` is **nullable**. It records **source-level quality / placeholder cues** from the parsers, separate from `ingestion_type` (`csv` vs `pdf`). If no rule matches, the column stays **SQL `NULL`** (shown as `(null)` in `inspect_db.sh` rollups).
-
-| `quality_flag` value | Source | When it is set |
-|----------------------|--------|------------------|
-| **SQL `NULL`** | CSV or PDF | No CSV placeholder token below matched, and no PDF rule below matched. Does **not** imply every numeric field is non-null. |
-| **`missing_no_weather`** | CSV | The parsed field slice for that date contains the substring **`NO WEATHER`**. |
-| **`missing_marked`** | CSV or PDF | **CSV:** any field token in the slice equals **`M`**. **PDF:** all daily observed values are missing in the PDF text (`_all_daily_observations_missing`; e.g. March 18 “all **M**”); core daily metrics are cleared for that row. |
-| **`parse_error_token`** | CSV | Any field token in that slice equals **`ERROR`**. |
-| **`qc_0`** | PDF | The PDF text contains **`QC FLAG: 0`**. If that string appears on a day that also triggers the PDF “all daily **M**” rule, **`qc_0` wins** (it is applied after that rule in code). |
-
-CSV rules are evaluated in order; later matches can overwrite earlier ones for the same row (see `parsers/csv_parser.py`). PDF `qc_0` is applied after PDF `missing_marked` (see `parsers/pdf_parser.py`).
+- The **`quality_flag`** meanings and rollup interpretation are documented in **step 4** (right after the `inspect_db.sh` / `stdout.txt` commands).
